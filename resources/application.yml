@@ -1,0 +1,156 @@
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+spring:
+  application:
+    name: mini-toon-automation
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/minitoon}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.minitoon: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Application Configuration
+app:
+  name: MiniToon AI Automation
+  version: 1.0.0
+
+  # AI Service Configuration
+  ai:
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: gemini-2.0-flash
+      base-url: https://generativelanguage.googleapis.com/v1beta
+      timeout: 60
+      max-retries: 3
+
+    leonardo:
+      api-key: ${LEONARDO_API_KEY:}
+      base-url: https://cloud.leonardo.ai/api/rest/v1
+      timeout: 120
+      max-retries: 3
+      default-model: b24e16ff-06e3-43eb-8d33-4416c2d75876
+
+    elevenlabs:
+      api-key: ${ELEVENLABS_API_KEY:}
+      base-url: https://api.elevenlabs.io/v1
+      timeout: 120
+      max-retries: 3
+      voice-id: ${ELEVENLABS_VOICE_ID:pNInz6obpgDQGcFmaJgB}
+      model-id: eleven_multilingual_v2
+
+  # FFmpeg Configuration
+  ffmpeg:
+    executable: ${FFMPEG_PATH:/usr/bin/ffmpeg}
+    ffprobe: ${FFPROBE_PATH:/usr/bin/ffprobe}
+    working-dir: ${WORKING_DIR:/tmp/minitoon}
+    output-dir: ${OUTPUT_DIR:/tmp/minitoon/output}
+    temp-dir: ${TEMP_DIR:/tmp/minitoon/temp}
+
+  # Video Configuration
+  video:
+    width: 720
+    height: 1280
+    fps: 30
+    duration-seconds: 35
+    bitrate: 2000k
+    audio-bitrate: 128k
+    codec: libx264
+    pixel-format: yuv420p
+    preset: fast
+
+  # Social Media Configuration
+  social:
+    youtube:
+      enabled: ${YOUTUBE_ENABLED:true}
+      client-id: ${YOUTUBE_CLIENT_ID:}
+      client-secret: ${YOUTUBE_CLIENT_SECRET:}
+      refresh-token: ${YOUTUBE_REFRESH_TOKEN:}
+      channel-id: ${YOUTUBE_CHANNEL_ID:}
+      privacy-status: ${YOUTUBE_PRIVACY_STATUS:public}
+      category-id: ${YOUTUBE_CATEGORY_ID:22}
+
+    instagram:
+      enabled: ${INSTAGRAM_ENABLED:true}
+      access-token: ${INSTAGRAM_ACCESS_TOKEN:}
+      account-id: ${INSTAGRAM_ACCOUNT_ID:}
+
+    facebook:
+      enabled: ${FACEBOOK_ENABLED:true}
+      access-token: ${FACEBOOK_ACCESS_TOKEN:}
+      page-id: ${FACEBOOK_PAGE_ID:}
+
+  # Scheduler Configuration
+  scheduler:
+    enabled: ${SCHEDULER_ENABLED:true}
+    daily-generation-time: ${DAILY_GENERATION_TIME:0 0 6 * * *}
+    daily-upload-time: ${DAILY_UPLOAD_TIME:0 0 8 * * *}
+    timezone: ${SCHEDULER_TIMEZONE:Asia/Dhaka}
+
+  # Content Configuration
+  content:
+    language: bn
+    target-audience: kids
+    story-themes:
+      - friendship
+      - kindness
+      - adventure
+      - nature
+      - family
+      - honesty
+      - courage
+      - humor
+    max-scenes: 5
+    min-scenes: 3
