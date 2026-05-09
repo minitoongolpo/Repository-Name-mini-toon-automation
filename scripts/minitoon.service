@@ -1,0 +1,22 @@
+[Unit]
+Description=MiniToon AI Automation Service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=minitoon
+Group=minitoon
+WorkingDirectory=/opt/minitoon
+Environment="JAVA_OPTS=-Xmx2g -Xms1g -XX:+UseG1GC"
+Environment="SPRING_PROFILES_ACTIVE=prod"
+EnvironmentFile=/opt/minitoon/.env
+ExecStart=/usr/bin/java $JAVA_OPTS -jar /opt/minitoon/app.jar
+ExecStop=/bin/kill -15 $MAINPID
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=minitoon
+
+[Install]
+WantedBy=multi-user.target

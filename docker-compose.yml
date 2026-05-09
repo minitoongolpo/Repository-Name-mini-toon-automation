@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minitoon-automation
+    ports:
+      - "8080:8080"
+    environment:
+      # Database
+      - DATABASE_URL=jdbc:postgresql://db:5432/minitoon
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=minitoon123
+
+      # AI APIs
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - LEONARDO_API_KEY=${LEONARDO_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID}
+
+      # Social Media
+      - YOUTUBE_ENABLED=true
+      - YOUTUBE_CLIENT_ID=${YOUTUBE_CLIENT_ID}
+      - YOUTUBE_CLIENT_SECRET=${YOUTUBE_CLIENT_SECRET}
+      - YOUTUBE_REFRESH_TOKEN=${YOUTUBE_REFRESH_TOKEN}
+      - YOUTUBE_CHANNEL_ID=${YOUTUBE_CHANNEL_ID}
+
+      - INSTAGRAM_ENABLED=true
+      - INSTAGRAM_ACCESS_TOKEN=${INSTAGRAM_ACCESS_TOKEN}
+      - INSTAGRAM_ACCOUNT_ID=${INSTAGRAM_ACCOUNT_ID}
+
+      - FACEBOOK_ENABLED=true
+      - FACEBOOK_ACCESS_TOKEN=${FACEBOOK_ACCESS_TOKEN}
+      - FACEBOOK_PAGE_ID=${FACEBOOK_PAGE_ID}
+
+      # Scheduler
+      - SCHEDULER_ENABLED=true
+      - DAILY_GENERATION_TIME=0 0 6 * * *
+      - DAILY_UPLOAD_TIME=0 0 8 * * *
+      - SCHEDULER_TIMEZONE=Asia/Dhaka
+
+      # JVM
+      - JAVA_OPTS=-Xmx2g -Xms1g -XX:+UseG1GC
+
+    volumes:
+      - minitoon-data:/tmp/minitoon
+      - minitoon-logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - minitoon-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: minitoon-db
+    environment:
+      - POSTGRES_DB=minitoon
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=minitoon123
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - minitoon-network
+
+volumes:
+  minitoon-data:
+  minitoon-logs:
+  postgres-data:
+
+networks:
+  minitoon-network:
+    driver: bridge
